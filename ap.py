@@ -1,6 +1,6 @@
 import os
 import time
-from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash , jsonify
 from werkzeug.utils import secure_filename
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization
@@ -14,6 +14,12 @@ from itsdangerous import URLSafeTimedSerializer
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Load variables from .env file
+MONGO_URI = os.getenv("MONGO_URI")
+
 
 # Flask app setup
 app = Flask(__name__)
@@ -21,7 +27,7 @@ app.secret_key ='SECRET_KEY'
 s = URLSafeTimedSerializer(app.secret_key)
 
 # MongoDB setup
-client = MongoClient('mongodb+srv://rutvikci22:Dvpbe4bUhSkzpk2J@cluster10.mkpwi.mongodb.net/')
+client = MongoClient('MONGO_URI')
 db = client['Credentials']
 users_collection = db['users']
 
@@ -139,6 +145,33 @@ def write_file(file_path, data):
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/user/analytics', methods=['GET'])
+def get_user_analytics():
+    # Assuming the user is logged in and the user ID is stored in session
+    user_id = session.get('user_id')  # Replace with the correct method for retrieving user_id from session
+
+    if not user_id:
+        return jsonify({"error": "User not logged in"}), 401
+
+    # Fetch user analytics from the database
+    user = db.users.find_one({"userId": user_id})  # Replace with the correct query
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    analytics_data = {
+        "filesUploaded": user.get('filesUploaded', 0),
+        "encryptionSuccess": user.get('encryptionSuccess', 0),
+        "decryptionSuccess": user.get('decryptionSuccess', 0),
+    }
+
+    return jsonify(analytics_data)
+
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':

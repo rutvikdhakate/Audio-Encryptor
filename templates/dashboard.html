@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AudioCrypt</title>
+    <style>
+        /* Basic Reset */
+        body, h1, h2, p, ul {
+            margin: 0;
+            padding: 0;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* General Layout */
+        body {
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+        }
+
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: rgba(25, 1, 61, 0.85);
+            transition: left 0.3s ease;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        #sidebar.active {
+            left: 0;
+        }
+
+        #sidebar ul {
+            list-style: none;
+            margin: 50px 0 0;
+            padding: 20px;
+            color: white;
+        }
+
+        #sidebar ul li {
+            margin: 15px 0;
+        }
+
+        #sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            display: block;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #sidebar ul li a:hover {
+            background-color: #4CAF50;
+        }
+
+        #hamburger-menu {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1100;
+            color: white;
+        }
+
+        .main-content {
+            margin: 100px auto;
+            padding: 20px;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        h1, h2 {
+            margin-bottom: 20px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: white;
+        }
+        
+        #analytics-container {
+            margin-top: 30px;
+        }
+
+        #analytics-container div {
+            margin: 15px 0;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9rem;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <ul>
+            <li><a href="/login">Login</a></li>
+            <li><a href="/signup">Signup</a></li>
+            <li><a href="/about">About Us</a></li>
+        </ul>
+    </div>
+
+    <!-- Hamburger Menu -->
+    <div id="hamburger-menu">☰ Menu</div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1>Dashboard</h1>
+        
+        <!-- Analytics Stats Section -->
+        <div id="analytics-container">
+            <h2>Website Analytics</h2>
+            <div id="site-usage-count">
+                <strong>Site Usage Count: </strong><span>0</span>
+            </div>
+            <div id="encryption-count">
+                <strong>Encryption Count: </strong><span>0</span>
+            </div>
+            <div id="decryption-count">
+                <strong>Decryption Count: </strong><span>0</span>
+            </div>
+            <div id="user-count">
+                <strong>User Count: </strong><span>0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2025 AudioCrypt. All rights reserved.</p>
+    </div>
+
+    <script>
+        // Function to handle sidebar toggling
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburgerMenu = document.getElementById('hamburger-menu');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+
+            // Toggle Sidebar
+            hamburgerMenu.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                mainContent.style.marginLeft = sidebar.classList.contains('active') ? '250px' : '0';
+            });
+
+            // Close Sidebar on clicking outside
+            document.addEventListener('click', (event) => {
+                if (!sidebar.contains(event.target) && !hamburgerMenu.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    mainContent.style.marginLeft = '0';
+                }
+            });
+        });
+
+        // Fetch and display analytics data from backend
+        fetch('/user/analytics')  // Assuming this API endpoint returns analytics data
+            .then(response => response.json())
+            .then(data => {
+                // Update the displayed stats
+                document.getElementById('site-usage-count').innerText = data.siteUsageCount;
+                document.getElementById('encryption-count').innerText = data.encryptionCount;
+                document.getElementById('decryption-count').innerText = data.decryptionCount;
+                document.getElementById('user-count').innerText = data.userCount;
+            })
+            .catch(error => console.error('Error fetching analytics:', error));
+    </script>
+</body>
+</html>
