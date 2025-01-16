@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 20px;
+        }
+        .chart-container {
+            width: 48%;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .chart-container:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 2px solid #f4f6f9;
+            padding-bottom: 10px;
+        }
+        .stats-info {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .stats-info p {
+            margin: 8px 0;
+        }
+        .stats-info p strong {
+            color: #0078d4;
+        }
+        canvas {
+            width: 100% !important;
+        }
+        #barChart {
+            max-height: 250px;
+        }
+        #pieChart {
+            max-height: 300px;
+        }
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .chart-container {
+                width: 90%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chart-container">
+            <div class="header">Website Usage Statistics</div>
+            <div class="stats-info">
+                <p><strong>Total Site Visits:</strong> {{ site_visits }}</p>
+                <p><strong>Total Encryptions:</strong> {{ encryption_count }}</p>
+                <p><strong>Total Decryptions:</strong> {{ decryption_count }}</p>
+            </div>
+            <canvas id="barChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="header">Activity Distribution</div>
+            <canvas id="pieChart"></canvas>
+        </div>
+    </div>
+    <script>
+        // Data from Flask (replace with actual values passed from Python)
+        const siteVisits = {{ site_visits }};
+        const encryptionCount = {{ encryption_count }};
+        const decryptionCount = {{ decryption_count }};
+        // Bar Chart
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Site Visits', 'Encryptions', 'Decryptions'],
+                datasets: [{
+                    label: 'Counts',
+                    data: [siteVisits, encryptionCount, decryptionCount],
+                    backgroundColor: ['#0078d4', '#28a745', '#ff5722'],
+                    borderColor: ['#005b9f', '#218838', '#d32f2f'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        // Pie Chart
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Site Visits', 'Encryptions', 'Decryptions'],
+                datasets: [{
+                    data: [siteVisits, encryptionCount, decryptionCount],
+                    backgroundColor: ['#0078d4', '#28a745', '#ff5722'],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 14
+                            },
+                            color: '#333'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,20 +1,24 @@
 import os
+import time
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
 from werkzeug.utils import secure_filename
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives.hashes import SHA256
+from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from pymongo import MongoClient
 
 # Flask app setup
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-# Dummy user database
-users = {
-    'testuser': 'testpassword',
-    'admin': 'adminpassword',
-}
+# MongoDB setup
+client = MongoClient('mongodb://localhost:27017/')
+db = client['Credentials']
+users_collection = db['User']
 
 # Directories
 UPLOAD_FOLDER = 'uploads'
@@ -48,61 +52,104 @@ def derive_chaotic_key(symmetric_key):
     ).derive(symmetric_key)
     return chaotic_key
 
-def encrypt_data(data, aes_key, chacha_key):
-    """Encrypt data using AES and ChaCha20."""
-    aes_iv = os.urandom(16)
-    aes_cipher = Cipher(algorithms.AES(aes_key), modes.CFB(aes_iv))
-    aes_encryptor = aes_cipher.encryptor()
-    aes_encrypted = aes_iv + aes_encryptor.update(data) + aes_encryptor.finalize()
+def generate_salt():
+    """Generate a random salt for password hashing."""
+    return os.urandom(16)
 
-    chacha_nonce = os.urandom(16)
-    chacha_cipher = Cipher(algorithms.ChaCha20(chacha_key, chacha_nonce), mode=None)
-    chacha_encryptor = chacha_cipher.encryptor()
-    final_encrypted = chacha_nonce + chacha_encryptor.update(aes_encrypted)
 
-    return final_encrypted
+def hash_password(password, salt):
+    """Hash a password using PBKDF2 with SHA256."""
+    kdf = PBKDF2HMAC(
+        algorithm=SHA256(),
+        length=32,
+        salt=salt,
+        iterations=390000,  # Adjust iterations for security needs
+        backend=default_backend()
+    )
+    return kdf.derive(password.encode()) + salt
 
-def decrypt_data(encrypted_data, aes_key, chacha_key):
-    """Decrypt data using ChaCha20 and AES."""
-    chacha_nonce = encrypted_data[:16]
-    chacha_encrypted = encrypted_data[16:]
 
-    chacha_cipher = Cipher(algorithms.ChaCha20(chacha_key, chacha_nonce), mode=None)
-    chacha_decryptor = chacha_cipher.decryptor()
-    aes_encrypted = chacha_decryptor.update(chacha_encrypted)
+def verify_password(hashed_password, salt, password):
+    """Verify a password against a stored hash."""
+    password_to_check = hash_password(password.encode(), salt)
+    return password_to_check == hashed_password
 
-    aes_iv = aes_encrypted[:16]
-    aes_ciphertext = aes_encrypted[16:]
 
-    aes_cipher = Cipher(algorithms.AES(aes_key), modes.CFB(aes_iv))
-    aes_decryptor = aes_cipher.decryptor()
-    decrypted_data = aes_decryptor.update(aes_ciphertext) + aes_decryptor.finalize()
+def encrypt_data(data, key):
+    """Encrypt data using AES in CBC mode."""
+    iv = os.urandom(16)
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+    encryptor = cipher.encryptor()
+    encrypted_data = encryptor.update(data) + encryptor.finalize()
+    return iv + encrypted_data
 
+
+def decrypt_data(encrypted_data, key):
+    """Decrypt data using AES in CBC mode."""
+    iv = encrypted_data[:16]
+    ciphertext = encrypted_data[16:]
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+    decryptor = cipher.decryptor()
+    decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
     return decrypted_data
 
+
 def read_file(file_path):
+    """Read the contents of a file."""
     with open(file_path, "rb") as f:
         return f.read()
 
+
 def write_file(file_path, data):
+    """Write data to a file."""
     with open(file_path, "wb") as f:
         f.write(data)
+
+
 
 # Routes
 @app.route('/')
 def home():
     return render_template('index.html')
 
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        # Check if the username already exists in the database
+        if users_collection.find_one({'username': username}):
+            return render_template('signup.html', alert_message='Username already exists!')
+
+        # Generate a random salt
+        salt = generate_salt()
+
+        # Hash the password using PBKDF2 with SHA256
+        hashed_password = hash_password(password, salt)
+
+        # Store the username and hashed password
+        users_collection.insert_one({'username': username, 'hashed_password': hashed_password, 'salt': salt})
+        alert_message = 'Account created successfully! Please login.'
+        time.sleep(2)  # Simulate a delay for security (optional)
+        return redirect(url_for('login'))
+    return render_template('signup.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if users.get(username) == password:
+        
+        # Load the user from the database
+        user = users_collection.find_one({'username': username})
+        
+        if user and user['password'] == password:
             session['username'] = username
+            alert_message = 'Login successful!'
             return redirect(url_for('audio_options'))
         else:
-            return render_template('login.html', error="Invalid credentials")
+            return render_template('login.html', alert_message='Invalid username or password!')
     return render_template('login.html')
 
 @app.route('/options')
@@ -110,6 +157,10 @@ def audio_options():
     if 'username' not in session:
         return redirect(url_for('login'))
     return render_template('options.html')
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 @app.route('/audio_encryption', methods=['GET', 'POST'])
 def audio_encryption():
@@ -170,6 +221,13 @@ def audio_decryption():
         else:
             return render_template('audio_decryption.html', message="Please upload a valid encrypted file!")
     return render_template('audio_decryption.html')
+@app.route('/download/uploads/<filename>')
+def download_upload_file(filename):
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    print(f"Looking for file at: {file_path}")  # Debugging line
+    if not os.path.exists(file_path):
+        return "File not found!", 404
+    return send_file(file_path, as_attachment=True, mimetype='audio/mp3')
 
 
 @app.route('/download/<filename>')

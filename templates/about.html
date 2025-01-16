@@ -3,28 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - Audio Encryption</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <title>About Us - AudioCrypt</title>
+    <style>
+        /* Basic Reset */
+        body, h1, h2, p, ul {
+            margin: 0;
+            padding: 0;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* General Layout */
+        body {
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+            background-image: url('https://www.hashtagmotion.co.uk/wp-content/uploads/2018/06/about_us_background.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: rgba(25, 1, 61, 0.85);
+            transition: left 0.3s ease;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        #sidebar.active {
+            left: 0;
+        }
+
+        #sidebar ul {
+            list-style: none;
+            margin: 50px 0 0;
+            padding: 20px;
+            color: white;
+        }
+
+        #sidebar ul li {
+            margin: 15px 0;
+        }
+
+        #sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            display: block;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #sidebar ul li a:hover {
+            background-color: #4CAF50;
+        }
+
+        #hamburger-menu {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1100;
+            color: white;
+        }
+
+        .main-content {
+            margin: 100px auto;
+            padding: 20px;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        h1, h2 {
+            margin-bottom: 20px;
+        }
+
+        ul {
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: white;
+        }
+    </style>
 </head>
 <body>
-    <div class="wrapper">
-        <!-- Left Navigation Bar -->
-        <nav class="sidebar">
-            <h2>Audio Encryption</h2>
-            <ul>
-                <li><a href="/login">Login</a></li>
-                <li><a href="/signup">Signup</a></li>
-                <li><a href="/about">About Us</a></li>
-            </ul>
-        </nav>
-
-        <!-- Main Content Area -->
-        <div class="main-content">
-            <div class="container">
-                <h1>About Us</h1>
-                <p>We are dedicated to ensuring the security and privacy of your audio files. Our application allows you to easily encrypt and decrypt your audio data, providing peace of mind.</p>
-            </div>
-        </div>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <ul>
+            <li><a href="/login">Login</a></li>
+            <li><a href="/signup">Signup</a></li>
+            <li><a href="/about">About Us</a></li>
+        </ul>
     </div>
+
+    <!-- Hamburger Menu -->
+    <div id="hamburger-menu">☰ Menu</div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1>Welcome to AudioCrypt</h1>
+        <h2>About Us</h2>
+        <p>
+            AudioCrypt is a project created by a group of enthusiastic college students 
+            passionate about encryption and data security. Our aim is to safeguard sensitive 
+            audio files using innovative encryption techniques.
+        </p>
+
+        <h2>Our Goal</h2>
+        <ul>
+            <li>Develop a secure platform for audio file encryption.</li>
+            <li>Contribute to data security research through practical solutions.</li>
+            <li>Make cybersecurity accessible and user-friendly.</li>
+        </ul>
+
+        <h2>Meet the Team</h2>
+        <ul>
+            <li><b>Yashas Rai</b> </li>
+            <li><b>Rutvik Dhakate</b> </li>
+            <li><b>Likith R D</b></li>
+        </ul>
+
+        <p>
+            If you want to connect or have suggestions, feel free to reach out. Let's make data security better together!
+        </p>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2025 AudioCrypt. All rights reserved.</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburgerMenu = document.getElementById('hamburger-menu');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+
+            // Toggle Sidebar
+            hamburgerMenu.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                mainContent.style.marginLeft = sidebar.classList.contains('active') ? '250px' : '0';
+            });
+
+            // Close Sidebar on clicking outside
+            document.addEventListener('click', (event) => {
+                if (!sidebar.contains(event.target) && !hamburgerMenu.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    mainContent.style.marginLeft = '0';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

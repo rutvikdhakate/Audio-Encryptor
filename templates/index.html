@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Audio Encryption</title>
+    <title>Audio Encryption</title>
     <style>
         /* Basic Reset */
-        body, h1, label, input, button {
+        body, h1, h3, label, input, button {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
@@ -15,8 +15,11 @@
         /* Layout Styling */
         body {
             display: flex;
-            margin: 0;
-            font-family: Arial, sans-serif;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f4;
         }
 
         /* Sidebar Styling */
@@ -26,7 +29,7 @@
             left: -250px; /* Start with sidebar hidden off-screen */
             width: 250px;
             height: 100%;
-            background-color: #333;
+            background-color: #19013d55;
             transition: left 0.3s ease;
             z-index: 1000;
         }
@@ -61,9 +64,7 @@
 
         /* Main Content Styling */
         .main-content {
-            flex-grow: 1;
-            padding: 20px;
-            margin-left: 0;
+            text-align: center;
             transition: margin-left 0.3s ease;
         }
 
@@ -73,15 +74,12 @@
 
         /* Hamburger Menu Styling */
         #hamburger-menu {
-            font-size: 30px;
-            color: #333;
+            position: fixed;
+            top: 10px;
+            left: 10px;
             cursor: pointer;
-            display: block;
-            margin-top: 20px;
-            z-index: 1200;
-            position: absolute;
-            top: 20px;
-            left: 20px;
+            font-size: 24px;
+            color: aliceblue;
         }
 
         /* Button Styling */
@@ -104,17 +102,37 @@
 
         /* Container Styling for Main Content */
         .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            height: 100vh;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 3.5rem;
             margin-bottom: 20px;
-            color: #333;
+            color: #faf7f7;
+        }
+
+        h3 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #666;
+        }
+        body {
+            background-image: url('https://wallpaperaccess.com/full/4062591.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(169, 231, 247, 0.475);
         }
     </style>
 </head>
@@ -132,26 +150,49 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="container">
-            <h1>Welcome to Audio Encryption</h1>
+            <h1>Welcome to AudioCrypt</h1>
+            <h3>Your Personal Audio Encryption Tool</h3>
         </div>
+    </div>
+    <div class="footer">
+        <p>&copy; 2025 AudioCrypt. All rights reserved.</p>
     </div>
 
     <!-- Hamburger Menu Button -->
-    <div id="hamburger-menu">☰</div>
+    <div id="hamburger-menu">☰Menu</div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Hamburger menu and sidebar toggle elements
-            const hamburgerMenu = document.getElementById("hamburger-menu");
-            const sidebar = document.getElementById("sidebar");
-            const mainContent = document.querySelector(".main-content");
+        document.addEventListener('DOMContentLoaded', () => {
+  const hamburgerMenu = document.getElementById('hamburger-menu');
+  const sidebar = document.getElementById('sidebar');
+  const mainContent = document.querySelector('.main-content');
+  const menuItems = document.querySelectorAll('#sidebar ul li a');
 
-            // Event listener to toggle the sidebar visibility via hamburger menu click
-            hamburgerMenu.addEventListener("click", () => {
-                sidebar.classList.toggle("active"); // Show/hide sidebar
-                mainContent.classList.toggle("shifted"); // Shift main content
-            });
-        });
+  // Function to toggle the sidebar
+  const toggleSidebar = () => {
+    sidebar.classList.toggle('active');
+    mainContent.classList.toggle('shifted');
+  };
+
+  // Event listener to toggle the sidebar on hamburger menu click
+  hamburgerMenu.addEventListener('click', (event) => {
+    event.stopPropagation();
+    toggleSidebar();
+  });
+
+  // Event listener to close the sidebar when a menu item is clicked
+  menuItems.forEach(item => {
+    item.addEventListener('click', toggleSidebar);
+  });
+
+  // Event listener to close the sidebar when clicking outside of it
+  document.addEventListener('click', (event) => {
+    if (sidebar.classList.contains('active') && !sidebar.contains(event.target) && event.target !== hamburgerMenu) {
+      toggleSidebar();
+    }
+  });
+});
+
     </script>
 </body>
 </html>
